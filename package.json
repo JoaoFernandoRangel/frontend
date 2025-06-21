@@ -16,7 +16,7 @@
     "react-scripts": "5.0.1",
     "web-vitals": "^2.1.4"
   },
-  "homepage": "https://JoaoFernandoRangel.github.io/pdfProcessor",
+  "homepage": "https://JoaoFernandoRangel.github.io/frontend/pdfProcessor",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
