@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import './App.css';
-import processPDF from './processPDF';
 
 function App() {
   const [file, setFile] = useState(null);
@@ -49,19 +49,30 @@ function App() {
     setLoading(true);
     setError(null);
 
+    const formData = new FormData();
+    formData.append('file', file);
+
     try {
-      const result = await processPDF(file);
-      if (result.success) {
+      const response = await axios.post(
+        'http://localhost:5000/process-pdf', 
+        formData, 
+        {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        }
+      );
+      
+      if (response.data.success) {
+        // Transforma os dados em um formato para a tabela
         const rowData = headers.map(header => {
           const fieldName = fieldMapping[header];
-          return result.data[fieldName] || '';
+          return response.data.data[fieldName] || '';
         });
         setTableData([rowData]);
       } else {
-        setError(result.error || 'Erro ao processar PDF');
+        setError(response.data.error || 'Erro ao processar PDF');
       }
     } catch (err) {
-      setError('Erro inesperado: ' + err.message);
+      setError(err.response?.data?.error || 'Erro na conexão com o servidor');
     } finally {
       setLoading(false);
     }
@@ -76,6 +87,7 @@ function App() {
   const downloadCSV = () => {
     if (tableData.length === 0) return;
 
+    // Cria o conteúdo CSV
     let csvContent = headers.join(',') + '\n';
     
     tableData.forEach(row => {
@@ -84,6 +96,7 @@ function App() {
       ).join(',') + '\n';
     });
 
+    // Cria o blob e faz o download
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -93,7 +106,6 @@ function App() {
     link.click();
     document.body.removeChild(link);
   };
-
   return (
     <div className="app-container dark-mode">
       <div className="upload-section">
